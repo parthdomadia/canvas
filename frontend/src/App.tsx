@@ -1,9 +1,19 @@
-import { CanvasStage } from './components/canvas/CanvasStage'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { CanvasPage } from './pages/CanvasPage'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: Infinity,
+    },
+  },
+})
 
 export default function App() {
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#0d0d0d' }}>
-      <CanvasStage />
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <CanvasPage />
+    </QueryClientProvider>
   )
 }
