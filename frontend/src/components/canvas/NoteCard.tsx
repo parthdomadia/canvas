@@ -32,8 +32,8 @@ export const NoteCard = memo(function NoteCard({
       <Rect
         width={node.width}
         height={node.height}
-        fill="var(--node-bg, #1a1a2e)"
-        stroke={isSelected ? 'var(--node-border-selected, #7c3aed)' : 'var(--node-border, #2a2a3a)'}
+        fill="#1a1a2e"
+        stroke={isSelected ? '#7c3aed' : '#2a2a3a'}
         strokeWidth={isSelected ? 2 : 1}
         cornerRadius={CORNER_RADIUS}
         shadowColor="rgba(0,0,0,0.35)"
@@ -49,7 +49,7 @@ export const NoteCard = memo(function NoteCard({
         text={node.content || ''}
         fontSize={FONT_SIZE}
         fontFamily="system-ui, -apple-system, sans-serif"
-        fill="var(--node-text, #e2e8f0)"
+        fill="#e2e8f0"
         lineHeight={1.5}
         wrap="word"
         ellipsis
