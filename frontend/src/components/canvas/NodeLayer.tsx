@@ -328,6 +328,7 @@ export function NodeLayer() {
         rotateEnabled={false}
         keepRatio={false}
         borderEnabled={false}
+        enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right']}
         anchorSize={10}
         anchorStyleFunc={(anchor) => { anchor.opacity(0) }}
         boundBoxFunc={(oldBox, newBox) => ({
