@@ -328,11 +328,8 @@ export function NodeLayer() {
         rotateEnabled={false}
         keepRatio={false}
         borderEnabled={false}
-        anchorSize={8}
-        anchorCornerRadius={4}
-        anchorStroke="#7c3aed"
-        anchorFill="#1a1a2e"
-        anchorStrokeWidth={1.5}
+        anchorSize={10}
+        anchorOpacity={0}
         boundBoxFunc={(oldBox, newBox) => ({
           ...newBox,
           width: Math.max(80, newBox.width),
