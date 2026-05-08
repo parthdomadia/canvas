@@ -18,6 +18,7 @@ export function CanvasPage() {
   useEffect(() => {
     if (canvas) {
       hydrateCanvas(canvas.id, canvas.nodes, canvas.edges, canvas.viewport)
+      useCanvasStore.temporal.getState().clear()
     }
   }, [canvas, hydrateCanvas])
 
