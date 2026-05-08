@@ -22,6 +22,7 @@ export function CanvasStage() {
   const [ghostRect, setGhostRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
   const lastClickTime = useRef<number>(0)
   const drawStart = useRef<{ x: number; y: number } | null>(null)
+  const ghostRectRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null)
 
   useEffect(() => {
     const handleResize = () =>
@@ -38,6 +39,8 @@ export function CanvasStage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasId])
 
+  // Reads live viewport from the Konva stage rather than Zustand viewport state,
+  // which is only updated on wheel/dragEnd and would be stale during a drag.
   const toCanvasCoords = useCallback(() => {
     const stage = stageRef.current
     if (!stage) return { x: 0, y: 0 }
@@ -120,17 +123,19 @@ export function CanvasStage() {
   )
 
   const handleStageMouseMove = useCallback(
-    (e: Konva.KonvaEventObject<MouseEvent>) => {
+    (_e: Konva.KonvaEventObject<MouseEvent>) => {
       if (!isDrawing || !drawStart.current) return
       const canvasPos = toCanvasCoords()
       const rawW = canvasPos.x - drawStart.current.x
       const rawH = canvasPos.y - drawStart.current.y
-      setGhostRect({
+      const updated = {
         x: rawW >= 0 ? drawStart.current.x : canvasPos.x,
         y: rawH >= 0 ? drawStart.current.y : canvasPos.y,
         w: Math.max(Math.abs(rawW), 80),
         h: Math.max(Math.abs(rawH), 60),
-      })
+      }
+      ghostRectRef.current = updated
+      setGhostRect(updated)
     },
     [isDrawing, toCanvasCoords],
   )
@@ -140,9 +145,10 @@ export function CanvasStage() {
       if (!isDrawing || !drawStart.current) return
       if (e.evt.button !== 0) return
 
-      const rect = ghostRect
+      const rect = ghostRectRef.current
       setIsDrawing(false)
       setGhostRect(null)
+      ghostRectRef.current = null
       drawStart.current = null
 
       if (!canvasId || !rect) return
@@ -159,7 +165,7 @@ export function CanvasStage() {
       addNode(node)
       setEditingNodeId(node.id)
     },
-    [isDrawing, ghostRect, canvasId, addNode, setEditingNodeId],
+    [isDrawing, canvasId, addNode, setEditingNodeId],
   )
 
   return (
