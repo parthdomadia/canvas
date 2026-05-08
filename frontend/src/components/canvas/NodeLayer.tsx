@@ -1,62 +1,242 @@
-import { useRef, useState } from 'react'
-import { Layer, Line } from 'react-konva'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Layer, Line, Transformer } from 'react-konva'
 import Konva from 'konva'
 import { useCanvasStore } from '@/store/canvasStore'
 import { createEdge } from '@/api/edges'
-import { NoteCard } from './NoteCard'
+import { updateNode as updateNodeApi } from '@/api/nodes'
+import { NoteCard, nodeGroupRefs } from './NoteCard'
+import { edgeUpdateFns } from './EdgeLine'
 
 export function NodeLayer() {
-  const nodes = useCanvasStore((s) => Object.values(s.nodes))
+  const nodesById = useCanvasStore((s) => s.nodes)
+  const nodeIds = useMemo(() => Object.keys(nodesById), [nodesById])
+  const edgesById = useCanvasStore((s) => s.edges)
+  const edges = useMemo(() => Object.values(edgesById), [edgesById])
   const selectedIds = useCanvasStore((s) => s.selectedIds)
-  const { updateNode, setSelectedIds, setEditingNodeId, addEdge } = useCanvasStore()
+  const { updateNode, moveNodes, setSelectedIds, setEditingNodeId } = useCanvasStore()
+
+  const transformerRef = useRef<Konva.Transformer>(null)
+  const canvasId = useCanvasStore((s) => s.canvasId)
 
   const connectingFromId = useRef<string | null>(null)
+  const connectingEdgeType = useRef<'simple' | 'directed'>('simple')
   const [previewLine, setPreviewLine] = useState<[number, number, number, number] | null>(null)
 
-  const handleDragMove = (id: string, x: number, y: number) => {
-    updateNode(id, { x, y })
-  }
+  useEffect(() => {
+    const tr = transformerRef.current
+    if (!tr) return
 
-  const handleDragEnd = (id: string, x: number, y: number) => {
-    updateNode(id, { x, y })
-  }
+    const selectedArr = [...selectedIds].filter((id) => !!nodesById[id])
+    if (selectedArr.length === 1) {
+      const group = nodeGroupRefs.get(selectedArr[0])
+      tr.nodes(group ? [group] : [])
+    } else {
+      tr.nodes([])
+    }
+    tr.getLayer()?.batchDraw()
+  }, [selectedIds, nodesById])
 
-  const handleDblClick = (id: string) => {
-    setEditingNodeId(id)
-  }
+  // Teal: transitive BFS following directed edges source→target
+  // Egg yolk: direct neighbors via simple edges (one hop, both directions)
+  const { directedConnectedIds, simpleConnectedIds } = useMemo(() => {
+    const selectedNodeIds = new Set([...selectedIds].filter((id) => !!nodesById[id]))
 
-  const handleClick = (id: string, e: Konva.KonvaEventObject<MouseEvent>) => {
-    // If we're in connect mode and click a different node, create edge
-    if (connectingFromId.current && connectingFromId.current !== id) {
-      const sourceId = connectingFromId.current
-      connectingFromId.current = null
-      setPreviewLine(null)
-
-      const store = useCanvasStore.getState()
-      createEdge(store.canvasId, sourceId, id)
-        .then((edge) => addEdge(edge))
-        .catch(console.error)
-      return
+    const directedVisited = new Set<string>()
+    const queue = [...selectedNodeIds]
+    while (queue.length > 0) {
+      const current = queue.pop()!
+      for (const edge of edges) {
+        if (edge.edge_type !== 'directed') continue
+        if (edge.source_id !== current) continue
+        if (directedVisited.has(edge.target_id) || selectedNodeIds.has(edge.target_id)) continue
+        if (!nodesById[edge.target_id]) continue
+        directedVisited.add(edge.target_id)
+        queue.push(edge.target_id)
+      }
     }
 
+    const simpleVisited = new Set<string>()
+    for (const edge of edges) {
+      if (edge.edge_type !== 'simple') continue
+      if (selectedNodeIds.has(edge.source_id) && !selectedNodeIds.has(edge.target_id) && !directedVisited.has(edge.target_id)) {
+        simpleVisited.add(edge.target_id)
+      }
+      if (selectedNodeIds.has(edge.target_id) && !selectedNodeIds.has(edge.source_id) && !directedVisited.has(edge.source_id)) {
+        simpleVisited.add(edge.source_id)
+      }
+    }
+
+    return { directedConnectedIds: directedVisited, simpleConnectedIds: simpleVisited }
+  }, [edges, selectedIds, nodesById])
+
+  const handleTransform = useCallback(() => {
+    const selectedArr = [...useCanvasStore.getState().selectedIds]
+    if (selectedArr.length !== 1) return
+    const id = selectedArr[0]
+    const group = nodeGroupRefs.get(id)
+    if (!group) return
+
+    const node = useCanvasStore.getState().nodes[id]
+    if (!node) return
+
+    const newW = Math.max(80, Math.round(node.width * group.scaleX()))
+    const newH = Math.max(60, Math.round(node.height * group.scaleY()))
+    group.scaleX(1)
+    group.scaleY(1)
+
+    updateNode(id, { width: newW, height: newH })
+  }, [updateNode])
+
+  const handleTransformEnd = useCallback(() => {
+    const selectedArr = [...useCanvasStore.getState().selectedIds]
+    if (selectedArr.length !== 1) return
+    const id = selectedArr[0]
+    const node = useCanvasStore.getState().nodes[id]
+    if (!node) return
+
+    updateNodeApi(id, { width: node.width, height: node.height }).catch(console.error)
+  }, [])
+
+  const handleDragMove = useCallback((id: string, x: number, y: number) => {
+    updateNode(id, { x, y })
+  }, [updateNode])
+
+  const handleDragEnd = useCallback((id: string, x: number, y: number) => {
+    updateNode(id, { x, y })
+  }, [updateNode])
+
+  const handleDblClick = useCallback((id: string) => {
+    setEditingNodeId(id)
+  }, [setEditingNodeId])
+
+  const handleClick = useCallback((id: string, e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (e.evt.button !== 0) return
     if (e.evt.shiftKey) {
-      const next = new Set(selectedIds)
+      const next = new Set(useCanvasStore.getState().selectedIds)
       if (next.has(id)) next.delete(id)
       else next.add(id)
       setSelectedIds(Array.from(next))
     } else {
       setSelectedIds([id])
     }
-  }
+  }, [setSelectedIds])
 
-  const handleStartConnect = (nodeId: string) => {
+  const handleStartClusterDrag = useCallback((nodeId: string, e: Konva.KonvaEventObject<MouseEvent>) => {
+    const stage = e.target.getStage()
+    if (!stage) return
+
+    const { nodes: nodesMap, edges: edgesMap } = useCanvasStore.getState()
+    const allEdges = Object.values(edgesMap)
+
+    // BFS through all edges (both directions) to find the full connected component
+    const visited = new Set<string>()
+    const queue = [nodeId]
+    visited.add(nodeId)
+    while (queue.length > 0) {
+      const current = queue.pop()!
+      for (const edge of allEdges) {
+        const neighbor =
+          edge.source_id === current ? edge.target_id
+          : edge.target_id === current ? edge.source_id
+          : null
+        if (neighbor && !visited.has(neighbor) && nodesMap[neighbor]) {
+          visited.add(neighbor)
+          queue.push(neighbor)
+        }
+      }
+    }
+
+    const clusterIds = [...visited]
+    const initialPositions = new Map(
+      clusterIds.map((id) => [id, { x: nodesMap[id].x, y: nodesMap[id].y }])
+    )
+
+    // Convert client coords → canvas coords using current viewport
+    const rect = stage.container().getBoundingClientRect()
+    const toCanvas = (clientX: number, clientY: number) => {
+      const vp = useCanvasStore.getState().viewport
+      return {
+        x: (clientX - rect.left - vp.x) / vp.z,
+        y: (clientY - rect.top - vp.y) / vp.z,
+      }
+    }
+
+    const startPos = toCanvas(e.evt.clientX, e.evt.clientY)
+
+    const onMouseMove = (ev: MouseEvent) => {
+      const pos = toCanvas(ev.clientX, ev.clientY)
+      const dx = pos.x - startPos.x
+      const dy = pos.y - startPos.y
+
+      // Move node Konva groups directly — zero React renders during drag
+      const livePositions = new Map<string, { x: number; y: number }>()
+      let stage: Konva.Stage | null = null
+
+      for (const id of clusterIds) {
+        const group = nodeGroupRefs.get(id)
+        if (!group) continue
+        const init = initialPositions.get(id)!
+        const nx = init.x + dx
+        const ny = init.y + dy
+        group.position({ x: nx, y: ny })
+        livePositions.set(id, { x: nx, y: ny })
+        if (!stage) stage = group.getStage()
+      }
+
+      // Update edges imperatively — no React, no store reads
+      const { nodes: nodesMap, edges: edgesMap } = useCanvasStore.getState()
+      for (const edge of Object.values(edgesMap)) {
+        const updateFn = edgeUpdateFns.get(edge.id)
+        if (!updateFn) continue
+
+        const srcLive = livePositions.get(edge.source_id)
+        const tgtLive = livePositions.get(edge.target_id)
+        if (!srcLive && !tgtLive) continue // edge unrelated to cluster
+
+        const srcNode = nodesMap[edge.source_id]
+        const tgtNode = nodesMap[edge.target_id]
+        if (!srcNode || !tgtNode) continue
+
+        const sx = (srcLive ? srcLive.x : srcNode.x) + srcNode.width / 2
+        const sy = (srcLive ? srcLive.y : srcNode.y) + srcNode.height / 2
+        const tx = (tgtLive ? tgtLive.x : tgtNode.x) + tgtNode.width / 2
+        const ty = (tgtLive ? tgtLive.y : tgtNode.y) + tgtNode.height / 2
+
+        updateFn(sx, sy, tx, ty)
+      }
+
+      // One redraw for all layers
+      stage?.batchDraw()
+    }
+
+    const onMouseUp = (ev: MouseEvent) => {
+      // Commit final positions to store in one batch (edges snap, React syncs)
+      const pos = toCanvas(ev.clientX, ev.clientY)
+      const dx = pos.x - startPos.x
+      const dy = pos.y - startPos.y
+      moveNodes(
+        clusterIds.map((id) => {
+          const init = initialPositions.get(id)!
+          return { id, x: init.x + dx, y: init.y + dy }
+        })
+      )
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }, [moveNodes])
+
+  const handleStartConnect = useCallback((nodeId: string, edgeType: 'simple' | 'directed') => {
     connectingFromId.current = nodeId
+    connectingEdgeType.current = edgeType
     const node = useCanvasStore.getState().nodes[nodeId]
     if (!node) return
     const cx = node.x + node.width / 2
     const cy = node.y + node.height / 2
     setPreviewLine([cx, cy, cx, cy])
-  }
+  }, [])
 
   const handleLayerMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (!connectingFromId.current || !previewLine) return
@@ -64,7 +244,6 @@ export function NodeLayer() {
     if (!stage) return
     const pos = stage.getPointerPosition()
     if (!pos) return
-    // Convert screen to canvas space
     const scale = stage.scaleX()
     const stagePos = stage.position()
     const canvasX = (pos.x - stagePos.x) / scale
@@ -72,16 +251,47 @@ export function NodeLayer() {
     setPreviewLine([previewLine[0], previewLine[1], canvasX, canvasY])
   }
 
-  const handleLayerMouseUp = () => {
-    // If mouse released on empty canvas, cancel connection
-    if (connectingFromId.current) {
-      connectingFromId.current = null
-      setPreviewLine(null)
+  const handleLayerMouseUp = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (!connectingFromId.current) return
+    const sourceId = connectingFromId.current
+    const edgeType = connectingEdgeType.current
+    connectingFromId.current = null
+    connectingEdgeType.current = 'simple'
+    setPreviewLine(null)
+
+    const stage = e.target.getStage()
+    if (!stage) return
+    const pos = stage.getPointerPosition()
+    if (!pos) return
+    const scale = stage.scaleX()
+    const stagePos = stage.position()
+    const canvasX = (pos.x - stagePos.x) / scale
+    const canvasY = (pos.y - stagePos.y) / scale
+
+    const storeNodes = useCanvasStore.getState().nodes
+    const targetNode = Object.values(storeNodes).find(
+      (node) =>
+        canvasX >= node.x &&
+        canvasX <= node.x + node.width &&
+        canvasY >= node.y &&
+        canvasY <= node.y + node.height &&
+        node.id !== sourceId
+    )
+
+    if (targetNode) {
+      const store = useCanvasStore.getState()
+      createEdge(store.canvasId, sourceId, targetNode.id, edgeType)
+        .then((edge) => store.addEdge(edge))
+        .catch(console.error)
     }
   }
 
   return (
-    <Layer onMouseMove={handleLayerMouseMove} onMouseUp={handleLayerMouseUp}>
+    <Layer
+      onMouseMove={handleLayerMouseMove}
+      onMouseUp={handleLayerMouseUp}
+      onContextMenu={(e) => e.evt.preventDefault()}
+    >
       {previewLine && (
         <Line
           points={previewLine}
@@ -91,18 +301,33 @@ export function NodeLayer() {
           listening={false}
         />
       )}
-      {nodes.map((node) => (
+      {nodeIds.map((id) => (
         <NoteCard
-          key={node.id}
-          node={node}
-          isSelected={selectedIds.has(node.id)}
+          key={id}
+          nodeId={id}
+          isSelected={selectedIds.has(id)}
+          isDirectedConnected={directedConnectedIds.has(id)}
+          isSimpleConnected={simpleConnectedIds.has(id)}
           onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
           onDoubleClick={handleDblClick}
           onClick={handleClick}
           onStartConnect={handleStartConnect}
+          onStartClusterDrag={handleStartClusterDrag}
         />
       ))}
+      <Transformer
+        ref={transformerRef}
+        rotateEnabled={false}
+        keepRatio={false}
+        boundBoxFunc={(oldBox, newBox) => ({
+          ...newBox,
+          width: Math.max(80, newBox.width),
+          height: Math.max(60, newBox.height),
+        })}
+        onTransform={handleTransform}
+        onTransformEnd={handleTransformEnd}
+      />
     </Layer>
   )
 }
