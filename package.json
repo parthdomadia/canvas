@@ -4,7 +4,7 @@
   "private": true,
   "main": "dist-electron/main.js",
   "scripts": {
-    "dev": "concurrently -k -n ELECTRON,FRONTEND -c cyan,green \"npm run dev:compile-electron\" \"npm run dev:frontend\" \"npm run dev:electron-run\"",
+    "dev": "concurrently -k -n COMPILE,FRONTEND,ELECTRON -c blue,green,cyan \"npm run dev:compile-electron\" \"npm run dev:frontend\" \"npm run dev:electron-run\"",
     "dev:compile-electron": "tsc --watch -p electron/tsconfig.json",
     "dev:frontend": "cd frontend && vite --port 5173",
     "dev:backend": "cd backend && uvicorn app.main:app --reload --port 8000",
