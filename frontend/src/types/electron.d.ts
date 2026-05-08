@@ -1,5 +1,9 @@
-interface Window {
-  electronAPI: {
-    platform: string
+export {}
+
+declare global {
+  interface Window {
+    electronAPI: {
+      platform: string
+    }
   }
 }
