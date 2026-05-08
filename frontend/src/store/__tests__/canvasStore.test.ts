@@ -25,6 +25,7 @@ beforeEach(() => {
     connectingFrom: null,
     editingNodeId: null,
   })
+  useCanvasStore.temporal.getState().clear()
 })
 
 describe('hydrateCanvas', () => {
@@ -77,6 +78,31 @@ describe('deleteNode', () => {
     })
     useCanvasStore.getState().deleteNode('node-1')
     expect(useCanvasStore.getState().edges['edge-1']).toBeUndefined()
+  })
+})
+
+describe('undo/redo', () => {
+  it('undo reverses addNode', () => {
+    useCanvasStore.getState().addNode(mockNode)
+    expect(useCanvasStore.getState().nodes['node-1']).toBeDefined()
+    useCanvasStore.temporal.getState().undo()
+    expect(useCanvasStore.getState().nodes['node-1']).toBeUndefined()
+  })
+
+  it('redo re-applies addNode after undo', () => {
+    useCanvasStore.getState().addNode(mockNode)
+    useCanvasStore.temporal.getState().undo()
+    useCanvasStore.temporal.getState().redo()
+    expect(useCanvasStore.getState().nodes['node-1']).toBeDefined()
+  })
+
+  it('pastStates is empty before any action', () => {
+    expect(useCanvasStore.temporal.getState().pastStates).toHaveLength(0)
+  })
+
+  it('pastStates grows after addNode', () => {
+    useCanvasStore.getState().addNode(mockNode)
+    expect(useCanvasStore.temporal.getState().pastStates.length).toBeGreaterThan(0)
   })
 })
 
