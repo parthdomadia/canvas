@@ -114,6 +114,7 @@ export function CanvasStage() {
         drawStart.current = canvasPos
         setIsDrawing(true)
         setGhostRect({ x: canvasPos.x, y: canvasPos.y, w: 0, h: 0 })
+        ghostRectRef.current = { x: canvasPos.x, y: canvasPos.y, w: 0, h: 0 }
         lastClickTime.current = 0
       } else {
         lastClickTime.current = now
