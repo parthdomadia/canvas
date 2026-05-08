@@ -78,17 +78,22 @@ export function NodeLayer() {
     const node = useCanvasStore.getState().nodes[id]
     if (!node) return
 
+    // Read group position BEFORE resetting scale — Transformer shifts x/y when
+    // resizing from top-left/top-right/bottom-left corners to keep the opposite
+    // corner fixed. Stale node.x/y in the store would cause wrong edge centers.
+    const newX = group.x()
+    const newY = group.y()
     const newW = Math.max(80, Math.round(node.width * group.scaleX()))
     const newH = Math.max(60, Math.round(node.height * group.scaleY()))
     group.scaleX(1)
     group.scaleY(1)
 
-    updateNode(id, { width: newW, height: newH })
+    updateNode(id, { x: newX, y: newY, width: newW, height: newH })
 
     // Imperatively update connected edges — same pattern as cluster drag,
     // avoids React render lag between Transformer visual update and EdgeLine re-render
-    const newCx = node.x + newW / 2
-    const newCy = node.y + newH / 2
+    const newCx = newX + newW / 2
+    const newCy = newY + newH / 2
     const { edges, nodes } = useCanvasStore.getState()
     for (const edge of Object.values(edges)) {
       if (edge.source_id !== id && edge.target_id !== id) continue
@@ -112,14 +117,17 @@ export function NodeLayer() {
     const node = useCanvasStore.getState().nodes[id]
     if (!node || !group) return
 
-    // Guard: if onTransform was skipped for the final frame, flush scale now
+    // Guard: if onTransform was skipped for the final frame, flush scale now.
+    // Also read group x/y — Transformer may have shifted position for corner resizes.
+    const finalX = group.x()
+    const finalY = group.y()
     const finalW = Math.max(80, Math.round(node.width * group.scaleX()))
     const finalH = Math.max(60, Math.round(node.height * group.scaleY()))
     group.scaleX(1)
     group.scaleY(1)
 
-    updateNode(id, { width: finalW, height: finalH })
-    updateNodeApi(id, { width: finalW, height: finalH }).catch(console.error)
+    updateNode(id, { x: finalX, y: finalY, width: finalW, height: finalH })
+    updateNodeApi(id, { x: finalX, y: finalY, width: finalW, height: finalH }).catch(console.error)
   }, [updateNode])
 
   const handleDragMove = useCallback((id: string, x: number, y: number) => {
