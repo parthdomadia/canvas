@@ -16,7 +16,6 @@ export function NodeLayer() {
   const { updateNode, moveNodes, setSelectedIds, setEditingNodeId } = useCanvasStore()
 
   const transformerRef = useRef<Konva.Transformer>(null)
-  const canvasId = useCanvasStore((s) => s.canvasId)
 
   const connectingFromId = useRef<string | null>(null)
   const connectingEdgeType = useRef<'simple' | 'directed'>('simple')
@@ -91,11 +90,19 @@ export function NodeLayer() {
     const selectedArr = [...useCanvasStore.getState().selectedIds]
     if (selectedArr.length !== 1) return
     const id = selectedArr[0]
+    const group = nodeGroupRefs.get(id)
     const node = useCanvasStore.getState().nodes[id]
-    if (!node) return
+    if (!node || !group) return
 
-    updateNodeApi(id, { width: node.width, height: node.height }).catch(console.error)
-  }, [])
+    // Guard: if onTransform was skipped for the final frame, flush scale now
+    const finalW = Math.max(80, Math.round(node.width * group.scaleX()))
+    const finalH = Math.max(60, Math.round(node.height * group.scaleY()))
+    group.scaleX(1)
+    group.scaleY(1)
+
+    updateNode(id, { width: finalW, height: finalH })
+    updateNodeApi(id, { width: finalW, height: finalH }).catch(console.error)
+  }, [updateNode])
 
   const handleDragMove = useCallback((id: string, x: number, y: number) => {
     updateNode(id, { x, y })
