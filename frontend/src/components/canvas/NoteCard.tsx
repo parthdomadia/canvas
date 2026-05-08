@@ -1,7 +1,8 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { Group, Rect, Text } from 'react-konva'
 import Konva from 'konva'
 import type { CanvasNode } from '@/types'
+import { ConnectionHandle } from './ConnectionHandle'
 
 const NODE_PADDING = 12
 const FONT_SIZE = 13
@@ -14,16 +15,21 @@ interface NoteCardProps {
   onDragEnd: (id: string, x: number, y: number) => void
   onDoubleClick: (id: string) => void
   onClick: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void
+  onStartConnect: (nodeId: string) => void
 }
 
 export const NoteCard = memo(function NoteCard({
-  node, isSelected, onDragMove, onDragEnd, onDoubleClick, onClick,
+  node, isSelected, onDragMove, onDragEnd, onDoubleClick, onClick, onStartConnect,
 }: NoteCardProps) {
+  const [hovered, setHovered] = useState(false)
+
   return (
     <Group
       x={node.x}
       y={node.y}
       draggable
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onDragMove={(e) => { e.cancelBubble = true; onDragMove(node.id, e.target.x(), e.target.y()) }}
       onDragEnd={(e) => { e.cancelBubble = true; onDragEnd(node.id, e.target.x(), e.target.y()) }}
       onDblClick={(e) => { e.cancelBubble = true; onDoubleClick(node.id) }}
@@ -55,6 +61,14 @@ export const NoteCard = memo(function NoteCard({
         ellipsis
         listening={false}
       />
+      {(hovered || isSelected) && (
+        <ConnectionHandle
+          x={node.width}
+          y={node.height / 2}
+          nodeId={node.id}
+          onStartConnect={onStartConnect}
+        />
+      )}
     </Group>
   )
 })
