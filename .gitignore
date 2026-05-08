@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist-electron/
+frontend/dist/
+release/
+backend/dist/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+backend/.venv/
+*.egg-info/
+
+# Env files
+.env
+backend/.env
+
+# DB artifacts
+*.db
+
+# Supabase / IDE
+.superpowers/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
