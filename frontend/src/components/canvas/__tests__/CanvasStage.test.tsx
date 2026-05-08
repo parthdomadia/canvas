@@ -8,6 +8,8 @@ vi.mock('react-konva', () => ({
     <div data-testid="konva-stage" onWheel={onWheel}>{children}</div>
   ),
   Layer: () => <div data-testid="konva-layer" />,
+  Rect: () => null,
+  Transformer: () => null,
 }))
 
 describe('CanvasStage', () => {
