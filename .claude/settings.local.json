@@ -23,7 +23,11 @@
       "Bash(.venv/Scripts/pytest tests/test_health.py -v)",
       "Bash(pytest -v)",
       "Bash(pip list:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(.venv\\\\Scripts\\\\activate)",
+      "Bash(.venv/Scripts/python -m pytest tests/test_canvases.py tests/test_health.py -v)",
+      "Bash(.venv/Scripts/python -c \"from supabase import AsyncClient; import inspect; print\\([m for m in dir\\(AsyncClient\\) if 'close' in m.lower\\(\\)]\\)\")",
+      "Bash(pytest tests/test_nodes.py -v)"
     ]
   }
 }
