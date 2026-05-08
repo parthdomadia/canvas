@@ -329,7 +329,7 @@ export function NodeLayer() {
         keepRatio={false}
         borderEnabled={false}
         anchorSize={10}
-        anchorOpacity={0}
+        anchorStyleFunc={(anchor) => { anchor.opacity(0) }}
         boundBoxFunc={(oldBox, newBox) => ({
           ...newBox,
           width: Math.max(80, newBox.width),
