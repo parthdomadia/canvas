@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/c/Users/parth/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh:*)",
+      "Bash(npm install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(node:*)",
+      "Bash(git:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm --version)",
+      "Skill(update-config)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest:*)",
+      "Bash(py --version)",
+      "Bash(.venv/Scripts/python -m pytest tests/test_health.py -v)",
+      "Bash(.venv/Scripts/activate)",
+      "Bash(pytest tests/test_health.py -v)",
+      "Bash(/c/Users/parth/code_master/canvas/backend/.venv/Scripts/pytest.exe:*)",
+      "Bash(.venv/Scripts/pytest.exe tests/test_health.py -v)",
+      "Bash(python:*)",
+      "Bash(.venv/Scripts/python -c \"import supabase; print\\(dir\\(supabase\\)\\)\")",
+      "Bash(.venv/Scripts/pytest tests/test_health.py -v)",
+      "Bash(pytest -v)",
+      "Bash(pip list:*)",
+      "Bash(pip install:*)"
+    ]
+  }
+}
