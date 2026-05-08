@@ -1,8 +1,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { Stage } from 'react-konva'
+import { Stage, Layer, Rect } from 'react-konva'
 import Konva from 'konva'
 import { useCanvasStore } from '@/store/canvasStore'
-import { screenToCanvas } from '@/utils/coordinates'
 import { createNode } from '@/api/nodes'
 import { NodeLayer } from './NodeLayer'
 import { EdgeLayer } from './EdgeLayer'
@@ -19,6 +18,11 @@ export function CanvasStage() {
   const storedViewport = useCanvasStore((s) => s.viewport)
   const { setViewport, addNode, setEditingNodeId, setSelectedIds } = useCanvasStore()
 
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [ghostRect, setGhostRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
+  const lastClickTime = useRef<number>(0)
+  const drawStart = useRef<{ x: number; y: number } | null>(null)
+
   useEffect(() => {
     const handleResize = () =>
       setSize({ width: window.innerWidth, height: window.innerHeight })
@@ -33,6 +37,19 @@ export function CanvasStage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasId])
+
+  const toCanvasCoords = useCallback(() => {
+    const stage = stageRef.current
+    if (!stage) return { x: 0, y: 0 }
+    const pos = stage.getPointerPosition()
+    if (!pos) return { x: 0, y: 0 }
+    const scale = stage.scaleX()
+    const stagePos = stage.position()
+    return {
+      x: (pos.x - stagePos.x) / scale,
+      y: (pos.y - stagePos.y) / scale,
+    }
+  }, [])
 
   const handleWheel = useCallback(
     (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -82,24 +99,67 @@ export function CanvasStage() {
     [setSelectedIds],
   )
 
-  const handleStageDblClick = useCallback(
-    async (e: Konva.KonvaEventObject<MouseEvent>) => {
+  const handleStageMouseDown = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
       if (e.target !== stageRef.current) return
-      if (!canvasId) return
+      if (e.evt.button !== 0) return
 
-      const stage = stageRef.current!
-      const pointer = stage.getPointerPosition()!
-      const viewport = useCanvasStore.getState().viewport
-      const canvasPos = screenToCanvas(pointer.x, pointer.y, viewport)
+      const now = Date.now()
+      if (now - lastClickTime.current < 300) {
+        // Second click within threshold — enter draw mode
+        const canvasPos = toCanvasCoords()
+        drawStart.current = canvasPos
+        setIsDrawing(true)
+        setGhostRect({ x: canvasPos.x, y: canvasPos.y, w: 0, h: 0 })
+        lastClickTime.current = 0
+      } else {
+        lastClickTime.current = now
+      }
+    },
+    [toCanvasCoords],
+  )
 
-      const x = canvasPos.x - 100
-      const y = canvasPos.y - 60
+  const handleStageMouseMove = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      if (!isDrawing || !drawStart.current) return
+      const canvasPos = toCanvasCoords()
+      const rawW = canvasPos.x - drawStart.current.x
+      const rawH = canvasPos.y - drawStart.current.y
+      setGhostRect({
+        x: rawW >= 0 ? drawStart.current.x : canvasPos.x,
+        y: rawH >= 0 ? drawStart.current.y : canvasPos.y,
+        w: Math.max(Math.abs(rawW), 80),
+        h: Math.max(Math.abs(rawH), 60),
+      })
+    },
+    [isDrawing, toCanvasCoords],
+  )
 
-      const node = await createNode(canvasId, x, y)
+  const handleStageMouseUp = useCallback(
+    async (e: Konva.KonvaEventObject<MouseEvent>) => {
+      if (!isDrawing || !drawStart.current) return
+      if (e.evt.button !== 0) return
+
+      const rect = ghostRect
+      setIsDrawing(false)
+      setGhostRect(null)
+      drawStart.current = null
+
+      if (!canvasId || !rect) return
+
+      const dragDistance = Math.sqrt(rect.w ** 2 + rect.h ** 2)
+      const useDrawn = dragDistance > 10
+
+      const x = useDrawn ? rect.x : rect.x - 100
+      const y = useDrawn ? rect.y : rect.y - 60
+      const width = useDrawn ? rect.w : undefined
+      const height = useDrawn ? rect.h : undefined
+
+      const node = await createNode(canvasId, x, y, width, height)
       addNode(node)
       setEditingNodeId(node.id)
     },
-    [canvasId, addNode, setEditingNodeId],
+    [isDrawing, ghostRect, canvasId, addNode, setEditingNodeId],
   )
 
   return (
@@ -107,15 +167,32 @@ export function CanvasStage() {
       ref={stageRef}
       width={size.width}
       height={size.height}
-      draggable
+      draggable={!isDrawing}
       onWheel={handleWheel}
       onDragEnd={handleDragEnd}
       onClick={handleStageClick}
-      onDblClick={handleStageDblClick}
+      onMouseDown={handleStageMouseDown}
+      onMouseMove={handleStageMouseMove}
+      onMouseUp={handleStageMouseUp}
       style={{ background: 'var(--canvas-bg)' }}
     >
       <EdgeLayer />
       <NodeLayer />
+      {ghostRect && (
+        <Layer listening={false}>
+          <Rect
+            x={ghostRect.x}
+            y={ghostRect.y}
+            width={ghostRect.w}
+            height={ghostRect.h}
+            stroke="#7c3aed"
+            strokeWidth={1.5}
+            dash={[6, 4]}
+            fill="rgba(124, 58, 237, 0.05)"
+            listening={false}
+          />
+        </Layer>
+      )}
     </Stage>
   )
 }
