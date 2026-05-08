@@ -1,10 +1,11 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
-import { Stage, Layer } from 'react-konva'
+import { Stage } from 'react-konva'
 import Konva from 'konva'
 import { useCanvasStore } from '@/store/canvasStore'
 import { screenToCanvas } from '@/utils/coordinates'
 import { createNode } from '@/api/nodes'
 import { NodeLayer } from './NodeLayer'
+import { EdgeLayer } from './EdgeLayer'
 
 const MIN_ZOOM = 0.1
 const MAX_ZOOM = 5
@@ -113,8 +114,8 @@ export function CanvasStage() {
       onDblClick={handleStageDblClick}
       style={{ background: 'var(--canvas-bg)' }}
     >
+      <EdgeLayer />
       <NodeLayer />
-      <Layer />
     </Stage>
   )
 }
