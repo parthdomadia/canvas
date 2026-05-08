@@ -1,18 +1,12 @@
-from collections.abc import AsyncGenerator
-
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
+from supabase import AsyncClient, acreate_client
 
 from .config import settings
 
-engine = create_async_engine(settings.database_url, echo=False, pool_pre_ping=True)
-AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+_client: AsyncClient | None = None
 
 
-class Base(DeclarativeBase):
-    pass
-
-
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with AsyncSessionLocal() as session:
-        yield session
+async def get_supabase() -> AsyncClient:
+    global _client
+    if _client is None:
+        _client = await acreate_client(settings.supabase_url, settings.supabase_service_role_key)
+    return _client
