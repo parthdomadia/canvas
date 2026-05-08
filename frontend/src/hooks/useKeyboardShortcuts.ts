@@ -11,6 +11,23 @@ export function useKeyboardShortcuts() {
 
       if (editingNodeId) return
 
+      // Undo: Ctrl+Z
+      if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
+        e.preventDefault()
+        useCanvasStore.temporal.getState().undo()
+        return
+      }
+
+      // Redo: Ctrl+Y or Ctrl+Shift+Z
+      if (
+        (e.key === 'y' && (e.ctrlKey || e.metaKey)) ||
+        (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey)
+      ) {
+        e.preventDefault()
+        useCanvasStore.temporal.getState().redo()
+        return
+      }
+
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.size > 0) {
         e.preventDefault()
         const ids = Array.from(selectedIds)
