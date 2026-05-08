@@ -84,6 +84,24 @@ export function NodeLayer() {
     group.scaleY(1)
 
     updateNode(id, { width: newW, height: newH })
+
+    // Imperatively update connected edges — same pattern as cluster drag,
+    // avoids React render lag between Transformer visual update and EdgeLine re-render
+    const newCx = node.x + newW / 2
+    const newCy = node.y + newH / 2
+    const { edges, nodes } = useCanvasStore.getState()
+    for (const edge of Object.values(edges)) {
+      if (edge.source_id !== id && edge.target_id !== id) continue
+      const updateFn = edgeUpdateFns.get(edge.id)
+      if (!updateFn) continue
+      const other = nodes[edge.source_id === id ? edge.target_id : edge.source_id]
+      if (!other) continue
+      const ox = other.x + other.width / 2
+      const oy = other.y + other.height / 2
+      const isSource = edge.source_id === id
+      updateFn(isSource ? newCx : ox, isSource ? newCy : oy, isSource ? ox : newCx, isSource ? oy : newCy)
+    }
+    group.getStage()?.batchDraw()
   }, [updateNode])
 
   const handleTransformEnd = useCallback(() => {
