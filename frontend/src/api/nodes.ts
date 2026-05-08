@@ -5,8 +5,13 @@ export async function createNode(
   canvasId: string,
   x: number,
   y: number,
+  width?: number,
+  height?: number,
 ): Promise<CanvasNode> {
-  const res = await apiClient.post<CanvasNode>(`/canvases/${canvasId}/nodes`, { x, y })
+  const body: Record<string, unknown> = { x, y }
+  if (width !== undefined) body.width = width
+  if (height !== undefined) body.height = height
+  const res = await apiClient.post<CanvasNode>(`/canvases/${canvasId}/nodes`, body)
   return res.data
 }
 
