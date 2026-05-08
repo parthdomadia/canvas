@@ -4,6 +4,7 @@ import { getOrCreateCanvas } from '@/api/canvases'
 import { useCanvasStore } from '@/store/canvasStore'
 import { CanvasStage } from '@/components/canvas/CanvasStage'
 import { UIOverlay } from '@/components/overlay/UIOverlay'
+import { Toolbar } from '@/components/ui/Toolbar'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useAutosave } from '@/hooks/useAutosave'
 
@@ -52,6 +53,7 @@ export function CanvasPage() {
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      <Toolbar />
       <CanvasStage />
       <UIOverlay />
     </div>
