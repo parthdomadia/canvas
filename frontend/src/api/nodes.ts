@@ -8,7 +8,7 @@ export async function createNode(
   width?: number,
   height?: number,
 ): Promise<CanvasNode> {
-  const body: Record<string, unknown> = { x, y }
+  const body: { x: number; y: number; width?: number; height?: number } = { x, y }
   if (width !== undefined) body.width = width
   if (height !== undefined) body.height = height
   const res = await apiClient.post<CanvasNode>(`/canvases/${canvasId}/nodes`, body)
