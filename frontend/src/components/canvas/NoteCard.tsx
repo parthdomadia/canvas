@@ -62,12 +62,12 @@ export const NoteCard = memo(function NoteCard({
         listening={false}
       />
       {(hovered || isSelected) && (
-        <ConnectionHandle
-          x={node.width}
-          y={node.height / 2}
-          nodeId={node.id}
-          onStartConnect={onStartConnect}
-        />
+        <>
+          <ConnectionHandle x={node.width / 2} y={0}              nodeId={node.id} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={node.width}     y={node.height / 2} nodeId={node.id} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={node.width / 2} y={node.height}    nodeId={node.id} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={0}              y={node.height / 2} nodeId={node.id} onStartConnect={onStartConnect} />
+        </>
       )}
     </Group>
   )
