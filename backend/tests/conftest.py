@@ -1,11 +1,15 @@
-import os
-
-os.environ.setdefault("SUPABASE_URL", "https://test.supabase.co")
-os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "test-service-key")
-
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app
+import app.database as db_module
+
+
+@pytest.fixture(autouse=True)
+async def reset_supabase_client():
+    """Reset the global Supabase client before each test to avoid connection reuse issues on Windows."""
+    db_module._client = None
+    yield
+    db_module._client = None
 
 
 @pytest.fixture
