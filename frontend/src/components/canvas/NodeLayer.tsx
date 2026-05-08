@@ -3,7 +3,7 @@ import { Layer, Line, Transformer } from 'react-konva'
 import Konva from 'konva'
 import { useCanvasStore } from '@/store/canvasStore'
 import { createEdge } from '@/api/edges'
-import { updateNode as updateNodeApi } from '@/api/nodes'
+import { updateNode as updateNodeApi, batchUpdateNodePositions } from '@/api/nodes'
 import { NoteCard, nodeGroupRefs } from './NoteCard'
 import { edgeUpdateFns } from './EdgeLine'
 
@@ -16,6 +16,7 @@ export function NodeLayer() {
   const { updateNode, moveNodes, setSelectedIds, setEditingNodeId } = useCanvasStore()
 
   const transformerRef = useRef<Konva.Transformer>(null)
+  const multiDragInitialPositions = useRef<Map<string, { x: number; y: number }> | null>(null)
 
   const connectingFromId = useRef<string | null>(null)
   const connectingEdgeType = useRef<'simple' | 'directed'>('simple')
@@ -130,13 +131,56 @@ export function NodeLayer() {
     updateNodeApi(id, { x: finalX, y: finalY, width: finalW, height: finalH }).catch(console.error)
   }, [updateNode])
 
+  const handleDragStart = useCallback((id: string) => {
+    const { selectedIds, nodes } = useCanvasStore.getState()
+    if (selectedIds.size > 1 && selectedIds.has(id)) {
+      const positions = new Map<string, { x: number; y: number }>()
+      for (const sid of selectedIds) {
+        if (nodes[sid]) positions.set(sid, { x: nodes[sid].x, y: nodes[sid].y })
+      }
+      multiDragInitialPositions.current = positions
+    } else {
+      multiDragInitialPositions.current = null
+    }
+  }, [])
+
   const handleDragMove = useCallback((id: string, x: number, y: number) => {
-    updateNode(id, { x, y })
+    const initPositions = multiDragInitialPositions.current
+    if (initPositions?.has(id)) {
+      const init = initPositions.get(id)!
+      const dx = x - init.x
+      const dy = y - init.y
+      for (const [otherId, initPos] of initPositions) {
+        if (otherId === id) continue
+        const group = nodeGroupRefs.get(otherId)
+        if (group) group.position({ x: initPos.x + dx, y: initPos.y + dy })
+      }
+      updateNode(id, { x, y })
+      nodeGroupRefs.get(id)?.getStage()?.batchDraw()
+    } else {
+      updateNode(id, { x, y })
+    }
   }, [updateNode])
 
   const handleDragEnd = useCallback((id: string, x: number, y: number) => {
-    updateNode(id, { x, y })
-  }, [updateNode])
+    const initPositions = multiDragInitialPositions.current
+    if (initPositions?.has(id)) {
+      const init = initPositions.get(id)!
+      const dx = x - init.x
+      const dy = y - init.y
+      const updates = Array.from(initPositions).map(([nodeId, initPos]) => ({
+        id: nodeId,
+        x: nodeId === id ? x : initPos.x + dx,
+        y: nodeId === id ? y : initPos.y + dy,
+      }))
+      multiDragInitialPositions.current = null
+      moveNodes(updates)
+      const { canvasId } = useCanvasStore.getState()
+      batchUpdateNodePositions(canvasId, updates).catch(console.error)
+    } else {
+      updateNode(id, { x, y })
+    }
+  }, [updateNode, moveNodes])
 
   const handleDblClick = useCallback((id: string) => {
     setEditingNodeId(id)
@@ -341,6 +385,7 @@ export function NodeLayer() {
           isSelected={selectedIds.has(id)}
           isDirectedConnected={directedConnectedIds.has(id)}
           isSimpleConnected={simpleConnectedIds.has(id)}
+          onDragStart={handleDragStart}
           onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
           onDoubleClick={handleDblClick}

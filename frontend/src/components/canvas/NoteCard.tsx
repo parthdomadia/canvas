@@ -1,49 +1,76 @@
 import { memo, useState } from 'react'
 import { Group, Rect, Text } from 'react-konva'
 import Konva from 'konva'
-import type { CanvasNode } from '@/types'
+import { useCanvasStore } from '@/store/canvasStore'
 import { ConnectionHandle } from './ConnectionHandle'
+
+export const nodeGroupRefs = new Map<string, Konva.Group>()
 
 const NODE_PADDING = 12
 const FONT_SIZE = 13
 const CORNER_RADIUS = 8
+const EGG_YOLK = '#F5C518'
+const TEAL = '#14B8A6'
 
 interface NoteCardProps {
-  node: CanvasNode
+  nodeId: string
   isSelected: boolean
+  isDirectedConnected?: boolean
+  isSimpleConnected?: boolean
+  onDragStart: (id: string) => void
   onDragMove: (id: string, x: number, y: number) => void
   onDragEnd: (id: string, x: number, y: number) => void
   onDoubleClick: (id: string) => void
   onClick: (id: string, e: Konva.KonvaEventObject<MouseEvent>) => void
-  onStartConnect: (nodeId: string) => void
+  onStartConnect: (nodeId: string, edgeType: 'simple' | 'directed') => void
+  onStartClusterDrag: (nodeId: string, e: Konva.KonvaEventObject<MouseEvent>) => void
 }
 
 export const NoteCard = memo(function NoteCard({
-  node, isSelected, onDragMove, onDragEnd, onDoubleClick, onClick, onStartConnect,
+  nodeId, isSelected, isDirectedConnected = false, isSimpleConnected = false,
+  onDragStart, onDragMove, onDragEnd, onDoubleClick, onClick, onStartConnect, onStartClusterDrag,
 }: NoteCardProps) {
+  const node = useCanvasStore((s) => s.nodes[nodeId])
   const [hovered, setHovered] = useState(false)
+
+  if (!node) return null
 
   return (
     <Group
+      ref={(g) => { if (g) nodeGroupRefs.set(nodeId, g); else nodeGroupRefs.delete(nodeId) }}
       x={node.x}
       y={node.y}
       draggable
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onDragMove={(e) => { e.cancelBubble = true; onDragMove(node.id, e.target.x(), e.target.y()) }}
-      onDragEnd={(e) => { e.cancelBubble = true; onDragEnd(node.id, e.target.x(), e.target.y()) }}
-      onDblClick={(e) => { e.cancelBubble = true; onDoubleClick(node.id) }}
-      onClick={(e) => { e.cancelBubble = true; onClick(node.id, e) }}
+      onMouseDown={(e) => {
+        if (e.evt.button === 2) {
+          e.cancelBubble = true
+          e.evt.preventDefault()
+          onStartClusterDrag(nodeId, e)
+        }
+      }}
+      onDragStart={(e) => {
+        if (e.evt.button === 2) {
+          ;(e.target as Konva.Node).stopDrag()
+          return
+        }
+        onDragStart(nodeId)
+      }}
+      onDragMove={(e) => { e.cancelBubble = true; onDragMove(nodeId, e.target.x(), e.target.y()) }}
+      onDragEnd={(e) => { e.cancelBubble = true; onDragEnd(nodeId, e.target.x(), e.target.y()) }}
+      onDblClick={(e) => { e.cancelBubble = true; onDoubleClick(nodeId) }}
+      onClick={(e) => { e.cancelBubble = true; onClick(nodeId, e) }}
     >
       <Rect
         width={node.width}
         height={node.height}
         fill="#1a1a2e"
-        stroke={isSelected ? '#7c3aed' : '#2a2a3a'}
-        strokeWidth={isSelected ? 2 : 1}
+        stroke={isSelected ? '#7c3aed' : isDirectedConnected ? TEAL : isSimpleConnected ? EGG_YOLK : '#2a2a3a'}
+        strokeWidth={isSelected || isDirectedConnected || isSimpleConnected ? 2 : 1}
         cornerRadius={CORNER_RADIUS}
-        shadowColor="rgba(0,0,0,0.35)"
-        shadowBlur={isSelected ? 16 : 6}
+        shadowColor={isSelected ? 'rgba(0,0,0,0.35)' : isDirectedConnected ? TEAL : isSimpleConnected ? EGG_YOLK : 'rgba(0,0,0,0.35)'}
+        shadowBlur={isSelected ? 16 : isDirectedConnected || isSimpleConnected ? 7 : 6}
         shadowOffsetY={2}
         shadowEnabled
       />
@@ -63,10 +90,10 @@ export const NoteCard = memo(function NoteCard({
       />
       {(hovered || isSelected) && (
         <>
-          <ConnectionHandle x={node.width / 2} y={0}              nodeId={node.id} onStartConnect={onStartConnect} />
-          <ConnectionHandle x={node.width}     y={node.height / 2} nodeId={node.id} onStartConnect={onStartConnect} />
-          <ConnectionHandle x={node.width / 2} y={node.height}    nodeId={node.id} onStartConnect={onStartConnect} />
-          <ConnectionHandle x={0}              y={node.height / 2} nodeId={node.id} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={node.width / 2} y={0}              nodeId={nodeId} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={node.width}     y={node.height / 2} nodeId={nodeId} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={node.width / 2} y={node.height}     nodeId={nodeId} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={0}              y={node.height / 2} nodeId={nodeId} onStartConnect={onStartConnect} />
         </>
       )}
     </Group>
