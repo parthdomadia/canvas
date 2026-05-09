@@ -210,13 +210,20 @@ export function NodeLayer() {
 
   const handleClick = useCallback((id: string, e: Konva.KonvaEventObject<MouseEvent>) => {
     if (e.evt.button !== 0) return
+    const current = useCanvasStore.getState().selectedIds
     if (e.evt.shiftKey) {
-      const next = new Set(useCanvasStore.getState().selectedIds)
+      const next = new Set(current)
       if (next.has(id)) next.delete(id)
       else next.add(id)
       setSelectedIds(Array.from(next))
     } else {
-      setSelectedIds([id])
+      if (current.has(id)) {
+        const next = new Set(current)
+        next.delete(id)
+        setSelectedIds(Array.from(next))
+      } else {
+        setSelectedIds([id])
+      }
     }
   }, [setSelectedIds])
 
