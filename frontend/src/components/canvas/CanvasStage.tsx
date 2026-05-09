@@ -120,9 +120,9 @@ export function CanvasStage() {
     setViewport({ x: pos.x, y: pos.y, z: stage.scaleX() })
   }, [setViewport])
 
-  // Cancel Konva's native stage drag unless middle-mouse or Space+left
+  // Cancel Konva's native stage drag when Space is held — rubber-band takes over
   const handleStageDragStart = useCallback((_e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (_e.evt.button !== 1 && !spaceHeld.current) {
+    if (_e.evt.button === 0 && spaceHeld.current) {
       stageRef.current?.stopDrag()
     }
   }, [])
@@ -152,8 +152,8 @@ export function CanvasStage() {
         lastClickTime.current = 0
       } else {
         lastClickTime.current = now
-        // Single click — potential rubber-band start (only if not using Space for pan)
-        if (!spaceHeld.current) {
+        // Space + left click — rubber-band start
+        if (spaceHeld.current) {
           const canvasPos = toCanvasCoords()
           selectionStart.current = canvasPos
           isSelectingRef.current = false
@@ -181,8 +181,8 @@ export function CanvasStage() {
         return
       }
 
-      // Rubber-band selection
-      if (selectionStart.current && !spaceHeld.current) {
+      // Rubber-band selection (Space + drag)
+      if (selectionStart.current && spaceHeld.current) {
         const canvasPos = toCanvasCoords()
         const rawW = canvasPos.x - selectionStart.current.x
         const rawH = canvasPos.y - selectionStart.current.y
