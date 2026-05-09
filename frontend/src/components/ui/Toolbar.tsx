@@ -21,7 +21,7 @@ export function Toolbar() {
       backdropFilter: 'blur(8px)',
     }}>
       <button
-        onClick={undo}
+        onClick={() => undo()}
         disabled={!canUndo}
         title="Undo (Ctrl+Z)"
         style={{
@@ -39,7 +39,7 @@ export function Toolbar() {
         ↩
       </button>
       <button
-        onClick={redo}
+        onClick={() => redo()}
         disabled={!canRedo}
         title="Redo (Ctrl+Y)"
         style={{
