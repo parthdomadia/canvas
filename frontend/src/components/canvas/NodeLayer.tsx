@@ -178,7 +178,6 @@ export function NodeLayer() {
         updateFn(sx, sy, tx, ty)
       }
 
-      updateNode(id, { x, y })
       nodeGroupRefs.get(id)?.getStage()?.batchDraw()
     } else {
       updateNode(id, { x, y })
