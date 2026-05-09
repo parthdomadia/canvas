@@ -150,11 +150,34 @@ export function NodeLayer() {
       const init = initPositions.get(id)!
       const dx = x - init.x
       const dy = y - init.y
+
+      // Move other selected Groups imperatively
       for (const [otherId, initPos] of initPositions) {
         if (otherId === id) continue
         const group = nodeGroupRefs.get(otherId)
         if (group) group.position({ x: initPos.x + dx, y: initPos.y + dy })
       }
+
+      // Update edges imperatively — same pattern as cluster drag
+      const { nodes: nodesMap, edges: edgesMap } = useCanvasStore.getState()
+      for (const edge of Object.values(edgesMap)) {
+        const updateFn = edgeUpdateFns.get(edge.id)
+        if (!updateFn) continue
+        const srcInSel = initPositions.has(edge.source_id)
+        const tgtInSel = initPositions.has(edge.target_id)
+        if (!srcInSel && !tgtInSel) continue
+        const srcNode = nodesMap[edge.source_id]
+        const tgtNode = nodesMap[edge.target_id]
+        if (!srcNode || !tgtNode) continue
+        const srcInit = initPositions.get(edge.source_id)
+        const tgtInit = initPositions.get(edge.target_id)
+        const sx = (srcInSel ? (edge.source_id === id ? x : (srcInit!.x + dx)) : srcNode.x) + srcNode.width / 2
+        const sy = (srcInSel ? (edge.source_id === id ? y : (srcInit!.y + dy)) : srcNode.y) + srcNode.height / 2
+        const tx = (tgtInSel ? (edge.target_id === id ? x : (tgtInit!.x + dx)) : tgtNode.x) + tgtNode.width / 2
+        const ty = (tgtInSel ? (edge.target_id === id ? y : (tgtInit!.y + dy)) : tgtNode.y) + tgtNode.height / 2
+        updateFn(sx, sy, tx, ty)
+      }
+
       updateNode(id, { x, y })
       nodeGroupRefs.get(id)?.getStage()?.batchDraw()
     } else {
