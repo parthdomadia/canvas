@@ -13,6 +13,7 @@ interface NodeEditorProps {
 
 export function NodeEditor({ node, viewport, onClose }: NodeEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const closedRef = useRef(false)
   const [content, setContent] = useState(node.content)
   const updateNode = useCanvasStore((s) => s.updateNode)
   const pos = canvasToScreen(node.x, node.y, viewport)
@@ -30,6 +31,8 @@ export function NodeEditor({ node, viewport, onClose }: NodeEditorProps) {
   }, [node.id, content, updateNode])
 
   const handleBlur = useCallback(() => {
+    if (closedRef.current) return
+    closedRef.current = true
     save()
     onClose()
   }, [save, onClose])
@@ -53,6 +56,7 @@ export function NodeEditor({ node, viewport, onClose }: NodeEditorProps) {
       // Exit: Escape saves and closes
       if (e.key === 'Escape') {
         e.preventDefault()
+        closedRef.current = true
         save()
         onClose()
         return
