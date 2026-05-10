@@ -21,9 +21,9 @@ export const THEMES: Record<ThemeName, Theme> = {
     edgeDefault: '#4a4a6a',
   },
   light: {
-    canvasBg: '#f0f0f0',
+    canvasBg: '#d1d5db',
     nodeBg: '#ffffff',
-    nodeBorder: '#d1d5db',
+    nodeBorder: '#9ca3af',
     nodeText: '#1a1a2e',
     accent: '#7c3aed',
     shadow: 'rgba(0,0,0,0.12)',
