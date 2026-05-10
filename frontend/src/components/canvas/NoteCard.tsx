@@ -8,7 +8,6 @@ import { ConnectionHandle } from './ConnectionHandle'
 export const nodeGroupRefs = new Map<string, Konva.Group>()
 
 const NODE_PADDING = 12
-const FONT_SIZE = 13
 const CORNER_RADIUS = 8
 
 interface NoteCardProps {
@@ -96,7 +95,7 @@ export const NoteCard = memo(function NoteCard({
         width={node.width - NODE_PADDING * 2}
         height={node.height - NODE_PADDING * 2}
         text={node.content || ''}
-        fontSize={FONT_SIZE}
+        fontSize={node.font_size}
         fontFamily="Alpino, system-ui, -apple-system, sans-serif"
         fill={theme.nodeText}
         lineHeight={1.5}
