@@ -17,7 +17,7 @@ export async function createNode(
 
 export async function updateNode(
   id: string,
-  patch: Partial<Pick<CanvasNode, 'content' | 'x' | 'y' | 'width' | 'height' | 'color' | 'z_index'>>,
+  patch: Partial<Pick<CanvasNode, 'content' | 'x' | 'y' | 'width' | 'height' | 'color' | 'z_index' | 'font_size'>>,
 ): Promise<CanvasNode> {
   const res = await apiClient.patch<CanvasNode>(`/nodes/${id}`, patch)
   return res.data

@@ -8,6 +8,7 @@ export interface CanvasNode {
   height: number
   color: string
   z_index: number
+  font_size: number
 }
 
 export interface CanvasEdge {
@@ -17,6 +18,7 @@ export interface CanvasEdge {
   target_id: string
   label: string | null
   style: 'solid' | 'dashed' | 'dotted'
+  edge_type: 'simple' | 'directed'
 }
 
 export interface Viewport {

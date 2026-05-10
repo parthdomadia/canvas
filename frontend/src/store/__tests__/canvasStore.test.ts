@@ -12,6 +12,7 @@ const mockNode: CanvasNode = {
   height: 120,
   color: 'default',
   z_index: 0,
+  font_size: 13,
 }
 
 beforeEach(() => {
