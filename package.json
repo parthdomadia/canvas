@@ -36,14 +36,11 @@
       "dist-electron/**",
       "frontend/dist/**"
     ],
-    "extraResources": [
-      {
-        "from": "backend/dist/",
-        "to": "backend/"
-      }
-    ],
     "win": {
       "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
     }
   }
 }
