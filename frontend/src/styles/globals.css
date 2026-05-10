@@ -26,10 +26,11 @@ body {
 .node-editor {
   scrollbar-width: thin;
   scrollbar-color: rgba(128, 128, 128, 0.35) transparent;
+  scroll-behavior: smooth;
 }
 
 .node-editor::-webkit-scrollbar {
-  width: 5px;
+  width: 10px; /* wider channel to give thumb breathing room from the edge */
 }
 
 .node-editor::-webkit-scrollbar-track {
@@ -39,10 +40,13 @@ body {
 .node-editor::-webkit-scrollbar-thumb {
   background: rgba(128, 128, 128, 0.35);
   border-radius: 99px;
+  border: 3px solid transparent; /* creates the gap between thumb and node edge */
+  background-clip: padding-box;
 }
 
 .node-editor::-webkit-scrollbar-thumb:hover {
   background: rgba(128, 128, 128, 0.6);
+  background-clip: padding-box;
 }
 
 :root {

@@ -100,6 +100,7 @@ export function NodeEditor({ node, viewport, onClose }: NodeEditorProps) {
       onChange={(e) => setContent(e.target.value)}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
+      onWheel={(e) => e.stopPropagation()}
       style={{
         position: 'absolute',
         left: pos.x,
