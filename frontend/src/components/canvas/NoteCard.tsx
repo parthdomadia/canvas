@@ -9,6 +9,14 @@ export const nodeGroupRefs = new Map<string, Konva.Group>()
 
 const NODE_PADDING = 12
 const CORNER_RADIUS = 8
+const FADE_HEIGHT = 20
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
 
 interface NoteCardProps {
   nodeId: string
@@ -101,6 +109,17 @@ export const NoteCard = memo(function NoteCard({
         lineHeight={1.5}
         wrap="word"
         ellipsis
+        listening={false}
+      />
+      <Rect
+        x={0}
+        y={node.height - FADE_HEIGHT}
+        width={node.width}
+        height={FADE_HEIGHT}
+        fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+        fillLinearGradientEndPoint={{ x: 0, y: FADE_HEIGHT }}
+        fillLinearGradientColorStops={[0, hexToRgba(theme.nodeBg, 0), 1, theme.nodeBg]}
+        cornerRadius={[0, 0, CORNER_RADIUS, CORNER_RADIUS]}
         listening={false}
       />
       {(hovered || isSelected) && (

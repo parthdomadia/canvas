@@ -116,7 +116,8 @@ export function NodeEditor({ node, viewport, onClose }: NodeEditorProps) {
         resize: 'none',
         outline: 'none',
         boxSizing: 'border-box',
-        overflow: 'hidden',
+        overflowX: 'hidden',
+        overflowY: 'auto',
         zIndex: 10,
         boxShadow: '0 0 0 4px rgba(124, 58, 237, 0.15)',
       }}
