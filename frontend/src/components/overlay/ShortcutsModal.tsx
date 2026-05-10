@@ -164,6 +164,7 @@ export function ShortcutsModal() {
                 Keyboard Shortcuts
               </span>
               <button
+                type="button"
                 onClick={close}
                 aria-label="Close shortcuts"
                 style={{
