@@ -2,6 +2,7 @@ import { memo, useState } from 'react'
 import { Group, Rect, Text } from 'react-konva'
 import Konva from 'konva'
 import { useCanvasStore } from '@/store/canvasStore'
+import { THEMES } from '@/styles/themes'
 import { ConnectionHandle } from './ConnectionHandle'
 
 export const nodeGroupRefs = new Map<string, Konva.Group>()
@@ -31,9 +32,26 @@ export const NoteCard = memo(function NoteCard({
   onDragStart, onDragMove, onDragEnd, onDoubleClick, onClick, onStartConnect, onStartClusterDrag,
 }: NoteCardProps) {
   const node = useCanvasStore((s) => s.nodes[nodeId])
+  const theme = useCanvasStore((s) => THEMES[s.theme])
   const [hovered, setHovered] = useState(false)
 
   if (!node) return null
+
+  const borderColor = isSelected
+    ? theme.accent
+    : isDirectedConnected
+    ? TEAL
+    : isSimpleConnected
+    ? EGG_YOLK
+    : theme.nodeBorder
+
+  const shadowColor = isSelected
+    ? theme.shadow
+    : isDirectedConnected
+    ? TEAL
+    : isSimpleConnected
+    ? EGG_YOLK
+    : theme.shadow
 
   return (
     <Group
@@ -65,11 +83,11 @@ export const NoteCard = memo(function NoteCard({
       <Rect
         width={node.width}
         height={node.height}
-        fill="#1a1a2e"
-        stroke={isSelected ? '#7c3aed' : isDirectedConnected ? TEAL : isSimpleConnected ? EGG_YOLK : '#2a2a3a'}
+        fill={theme.nodeBg}
+        stroke={borderColor}
         strokeWidth={isSelected || isDirectedConnected || isSimpleConnected ? 2 : 1}
         cornerRadius={CORNER_RADIUS}
-        shadowColor={isSelected ? 'rgba(0,0,0,0.35)' : isDirectedConnected ? TEAL : isSimpleConnected ? EGG_YOLK : 'rgba(0,0,0,0.35)'}
+        shadowColor={shadowColor}
         shadowBlur={isSelected ? 16 : isDirectedConnected || isSimpleConnected ? 7 : 6}
         shadowOffsetY={2}
         shadowEnabled
@@ -82,7 +100,7 @@ export const NoteCard = memo(function NoteCard({
         text={node.content || ''}
         fontSize={FONT_SIZE}
         fontFamily="system-ui, -apple-system, sans-serif"
-        fill="#e2e8f0"
+        fill={theme.nodeText}
         lineHeight={1.5}
         wrap="word"
         ellipsis
@@ -90,10 +108,10 @@ export const NoteCard = memo(function NoteCard({
       />
       {(hovered || isSelected) && (
         <>
-          <ConnectionHandle x={node.width / 2} y={0}              nodeId={nodeId} onStartConnect={onStartConnect} />
-          <ConnectionHandle x={node.width}     y={node.height / 2} nodeId={nodeId} onStartConnect={onStartConnect} />
-          <ConnectionHandle x={node.width / 2} y={node.height}     nodeId={nodeId} onStartConnect={onStartConnect} />
-          <ConnectionHandle x={0}              y={node.height / 2} nodeId={nodeId} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={node.width / 2} y={0}               nodeId={nodeId} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={node.width}     y={node.height / 2}  nodeId={nodeId} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={node.width / 2} y={node.height}      nodeId={nodeId} onStartConnect={onStartConnect} />
+          <ConnectionHandle x={0}              y={node.height / 2}  nodeId={nodeId} onStartConnect={onStartConnect} />
         </>
       )}
     </Group>
