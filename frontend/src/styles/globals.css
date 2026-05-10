@@ -23,6 +23,28 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.node-editor {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.35) transparent;
+}
+
+.node-editor::-webkit-scrollbar {
+  width: 5px;
+}
+
+.node-editor::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.node-editor::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.35);
+  border-radius: 99px;
+}
+
+.node-editor::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.6);
+}
+
 :root {
   --canvas-bg: #0d0d0d;
   --node-bg: #1a1a2e;

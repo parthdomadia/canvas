@@ -95,6 +95,7 @@ export function NodeEditor({ node, viewport, onClose }: NodeEditorProps) {
   return (
     <textarea
       ref={textareaRef}
+      className="node-editor"
       value={content}
       onChange={(e) => setContent(e.target.value)}
       onBlur={handleBlur}
