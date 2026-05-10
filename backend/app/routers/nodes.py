@@ -30,6 +30,7 @@ async def create_node(
         "height": body.height,
         "color": body.color,
         "z_index": 0,
+        "font_size": body.font_size,
     }).execute()
 
     if not result.data:

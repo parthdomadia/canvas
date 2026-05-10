@@ -8,6 +8,7 @@ class NodeCreate(BaseModel):
     width: float = 200.0
     height: float = 120.0
     color: str = "default"
+    font_size: int = 13
 
 
 class NodePatch(BaseModel):
@@ -18,6 +19,7 @@ class NodePatch(BaseModel):
     height: float | None = None
     color: str | None = None
     z_index: int | None = None
+    font_size: int | None = None
 
 
 class NodePositionUpdate(BaseModel):
@@ -40,3 +42,4 @@ class NodeResponse(BaseModel):
     height: float
     color: str
     z_index: int
+    font_size: int
