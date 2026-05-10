@@ -1,5 +1,6 @@
 import { useCanvasStore } from '@/store/canvasStore'
 import { NodeEditor } from './NodeEditor'
+import { ShortcutsModal } from './ShortcutsModal'
 
 export function UIOverlay() {
   const editingNodeId = useCanvasStore((s) => s.editingNodeId)
@@ -11,6 +12,7 @@ export function UIOverlay() {
 
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      <ShortcutsModal />
       {editingNode && (
         <div style={{ pointerEvents: 'all' }}>
           <NodeEditor
