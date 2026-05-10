@@ -144,7 +144,7 @@ export function ShortcutsModal() {
           }}
         >
           <div
-            className="shortcuts-modal-enter"
+            className="shortcuts-modal-enter app-scrollable"
             onClick={(e) => e.stopPropagation()}
             style={{
               width: 480,

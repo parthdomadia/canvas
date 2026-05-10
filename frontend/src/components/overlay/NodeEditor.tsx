@@ -25,6 +25,42 @@ export function NodeEditor({ node, viewport, onClose }: NodeEditorProps) {
     el.setSelectionRange(el.value.length, el.value.length)
   }, [])
 
+  useEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+
+    let velocity = 0
+    let rafId: number | null = null
+
+    function animate() {
+      if (!el) return
+      const step = velocity * 0.12
+      el.scrollTop += step
+      velocity -= step
+      if (Math.abs(velocity) < 0.5) {
+        velocity = 0
+        rafId = null
+        return
+      }
+      rafId = requestAnimationFrame(animate)
+    }
+
+    function onWheel(e: WheelEvent) {
+      e.preventDefault()
+      e.stopPropagation()
+      velocity += e.deltaY
+      if (rafId === null) {
+        rafId = requestAnimationFrame(animate)
+      }
+    }
+
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      el.removeEventListener('wheel', onWheel)
+      if (rafId !== null) cancelAnimationFrame(rafId)
+    }
+  }, [])
+
   const save = useCallback(() => {
     updateNode(node.id, { content })
     apiUpdateNode(node.id, { content }).catch(console.error)
@@ -95,12 +131,11 @@ export function NodeEditor({ node, viewport, onClose }: NodeEditorProps) {
   return (
     <textarea
       ref={textareaRef}
-      className="node-editor"
+      className="node-editor app-scrollable"
       value={content}
       onChange={(e) => setContent(e.target.value)}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      onWheel={(e) => e.stopPropagation()}
       style={{
         position: 'absolute',
         left: pos.x,
