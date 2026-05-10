@@ -5,7 +5,7 @@ export function UIOverlay() {
   const editingNodeId = useCanvasStore((s) => s.editingNodeId)
   const nodes = useCanvasStore((s) => s.nodes)
   const viewport = useCanvasStore((s) => s.viewport)
-  const { updateNode, setEditingNodeId } = useCanvasStore()
+  const setEditingNodeId = useCanvasStore((s) => s.setEditingNodeId)
 
   const editingNode = editingNodeId ? nodes[editingNodeId] : null
 
@@ -16,7 +16,6 @@ export function UIOverlay() {
           <NodeEditor
             node={editingNode}
             viewport={viewport}
-            onChange={(content) => updateNode(editingNode.id, { content })}
             onClose={() => setEditingNodeId(null)}
           />
         </div>
