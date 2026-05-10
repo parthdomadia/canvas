@@ -5,9 +5,11 @@ export interface Theme {
   nodeBg: string
   nodeBorder: string
   nodeText: string
-  accent: string       // selected node border, connection handles, selected edge
-  shadow: string       // rgba shadow string for Konva shadowColor
-  edgeDefault: string  // unselected, unhighlighted edge color
+  accent: string              // selected node border, connection handles, selected edge
+  shadow: string              // rgba shadow string for Konva shadowColor
+  edgeDefault: string         // unselected, unhighlighted edge color
+  highlightDirected: string   // directed-reachability neighbor highlight
+  highlightSimple: string     // simple-neighbor highlight
 }
 
 export const THEMES: Record<ThemeName, Theme> = {
@@ -19,6 +21,8 @@ export const THEMES: Record<ThemeName, Theme> = {
     accent: '#7c3aed',
     shadow: 'rgba(0,0,0,0.35)',
     edgeDefault: '#4a4a6a',
+    highlightDirected: '#14B8A6',
+    highlightSimple: '#F5C518',
   },
   light: {
     canvasBg: '#f4f0e8',
@@ -28,6 +32,8 @@ export const THEMES: Record<ThemeName, Theme> = {
     accent: '#7c3aed',
     shadow: 'rgba(0,0,0,0.12)',
     edgeDefault: '#9ca3af',
+    highlightDirected: '#0891B2',
+    highlightSimple: '#D97706',
   },
   matrix: {
     canvasBg: '#000000',
@@ -37,6 +43,8 @@ export const THEMES: Record<ThemeName, Theme> = {
     accent: '#00ff41',
     shadow: 'rgba(0,255,65,0.2)',
     edgeDefault: '#1a5c1a',
+    highlightDirected: '#14B8A6',
+    highlightSimple: '#F5C518',
   },
 }
 

@@ -10,8 +10,6 @@ export const nodeGroupRefs = new Map<string, Konva.Group>()
 const NODE_PADDING = 12
 const FONT_SIZE = 13
 const CORNER_RADIUS = 8
-const EGG_YOLK = '#F5C518'
-const TEAL = '#14B8A6'
 
 interface NoteCardProps {
   nodeId: string
@@ -40,17 +38,17 @@ export const NoteCard = memo(function NoteCard({
   const borderColor = isSelected
     ? theme.accent
     : isDirectedConnected
-    ? TEAL
+    ? theme.highlightDirected
     : isSimpleConnected
-    ? EGG_YOLK
+    ? theme.highlightSimple
     : theme.nodeBorder
 
   const shadowColor = isSelected
     ? theme.shadow
     : isDirectedConnected
-    ? TEAL
+    ? theme.highlightDirected
     : isSimpleConnected
-    ? EGG_YOLK
+    ? theme.highlightSimple
     : theme.shadow
 
   return (
