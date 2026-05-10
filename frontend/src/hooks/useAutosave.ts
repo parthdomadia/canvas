@@ -21,8 +21,8 @@ export function useAutosave() {
       const p = prev[node.id]
       if (!p) continue
 
+      // content is intentionally excluded — NodeEditor saves it directly on close
       const changed =
-        p.content !== node.content ||
         p.x !== node.x ||
         p.y !== node.y ||
         p.width !== node.width ||
@@ -37,7 +37,6 @@ export function useAutosave() {
       const capturedNode = { ...node }
       const timer = setTimeout(() => {
         apiUpdateNode(capturedNode.id, {
-          content: capturedNode.content,
           x: capturedNode.x,
           y: capturedNode.y,
           width: capturedNode.width,
