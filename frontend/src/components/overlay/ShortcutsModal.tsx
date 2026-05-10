@@ -90,6 +90,7 @@ export function ShortcutsModal() {
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
         aria-label="Open keyboard shortcuts"
         style={{
@@ -120,7 +121,6 @@ export function ShortcutsModal() {
       {open && (
         <div
           role="dialog"
-          aria-modal="true"
           aria-label="Keyboard shortcuts"
           onClick={close}
           style={{
