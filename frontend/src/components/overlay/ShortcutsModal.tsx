@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 interface ShortcutEntry {
   keys: string[][]   // outer array = alternatives (joined by "/"), inner array = combo keys (joined by "+")
@@ -41,7 +41,7 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
     shortcuts: [
       { keys: [['Escape']], description: 'Save and close' },
       { keys: [['Enter']], description: 'New line' },
-      { keys: [['- Space']], description: 'Convert to bullet •' },
+      { keys: [['-', 'Space']], description: 'Convert to bullet •' },
       { keys: [['Ctrl', 'Shift', '<']], description: 'Decrease font size' },
       { keys: [['Ctrl', 'Shift', '>']], description: 'Increase font size' },
     ],
@@ -74,6 +74,13 @@ const SEPARATOR_STYLE: React.CSSProperties = {
 export function ShortcutsModal() {
   const [open, setOpen] = useState(false)
   const close = useCallback(() => setOpen(false), [])
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (open) {
+      closeButtonRef.current?.focus()
+    }
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -121,6 +128,7 @@ export function ShortcutsModal() {
       {open && (
         <div
           role="dialog"
+          aria-modal="true"
           aria-label="Keyboard shortcuts"
           onClick={close}
           style={{
@@ -164,6 +172,7 @@ export function ShortcutsModal() {
                 Keyboard Shortcuts
               </span>
               <button
+                ref={closeButtonRef}
                 type="button"
                 onClick={close}
                 aria-label="Close shortcuts"
