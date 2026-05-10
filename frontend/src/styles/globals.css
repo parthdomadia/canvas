@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Alpino';
+  src: url('@/assets/fonts/Alpino-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -11,7 +19,7 @@
 body {
   overflow: hidden;
   background: #0d0d0d;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Alpino', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

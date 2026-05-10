@@ -39,7 +39,7 @@ export function NodeEditor({ node, viewport, onChange, onClose }: NodeEditorProp
         height: node.height * viewport.z,
         padding: `${12 * viewport.z}px`,
         fontSize: `${13 * viewport.z}px`,
-        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontFamily: "'Alpino', system-ui, -apple-system, sans-serif",
         lineHeight: 1.5,
         background: 'var(--node-bg, #1a1a2e)',
         color: 'var(--node-text, #e2e8f0)',
