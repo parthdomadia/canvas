@@ -24,6 +24,7 @@ beforeEach(() => {
     toolMode: 'select',
     connectingFrom: null,
     editingNodeId: null,
+    theme: 'dark',
   })
   useCanvasStore.temporal.getState().clear()
 })
@@ -111,5 +112,23 @@ describe('setSelectedIds', () => {
     useCanvasStore.getState().setSelectedIds(['node-1', 'node-2'])
     expect(useCanvasStore.getState().selectedIds.has('node-1')).toBe(true)
     expect(useCanvasStore.getState().selectedIds.has('node-2')).toBe(true)
+  })
+})
+
+describe('theme', () => {
+  it('defaults to dark', () => {
+    expect(useCanvasStore.getState().theme).toBe('dark')
+  })
+
+  it('setTheme updates the theme', () => {
+    useCanvasStore.getState().setTheme('matrix')
+    expect(useCanvasStore.getState().theme).toBe('matrix')
+  })
+
+  it('setTheme accepts all three themes', () => {
+    useCanvasStore.getState().setTheme('light')
+    expect(useCanvasStore.getState().theme).toBe('light')
+    useCanvasStore.getState().setTheme('dark')
+    expect(useCanvasStore.getState().theme).toBe('dark')
   })
 })

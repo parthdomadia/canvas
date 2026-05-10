@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { temporal } from 'zundo'
 import type { CanvasNode, CanvasEdge, Viewport, ToolMode } from '@/types'
+import { type ThemeName, loadTheme, saveTheme } from '@/styles/themes'
 
 interface CanvasState {
   canvasId: string
@@ -11,6 +12,7 @@ interface CanvasState {
   toolMode: ToolMode
   connectingFrom: string | null
   editingNodeId: string | null
+  theme: ThemeName
 
   hydrateCanvas: (id: string, nodes: CanvasNode[], edges: CanvasEdge[], viewport: Viewport) => void
   addNode: (node: CanvasNode) => void
@@ -24,6 +26,7 @@ interface CanvasState {
   setToolMode: (mode: ToolMode) => void
   setConnectingFrom: (id: string | null) => void
   setEditingNodeId: (id: string | null) => void
+  setTheme: (theme: ThemeName) => void
 }
 
 export const useCanvasStore = create<CanvasState>()(
@@ -37,6 +40,7 @@ export const useCanvasStore = create<CanvasState>()(
       toolMode: 'select' as ToolMode,
       connectingFrom: null,
       editingNodeId: null,
+      theme: loadTheme(),
 
       hydrateCanvas: (id, nodes, edges, viewport) =>
         set({
@@ -88,9 +92,10 @@ export const useCanvasStore = create<CanvasState>()(
       setToolMode: (mode) => set({ toolMode: mode }),
       setConnectingFrom: (id) => set({ connectingFrom: id }),
       setEditingNodeId: (id) => set({ editingNodeId: id }),
+      setTheme: (theme) => { saveTheme(theme); set({ theme }) },
     }),
     {
-      // Only track nodes and edges in undo history
+      // Only track nodes and edges in undo history — theme changes are not undoable
       partialize: (state) => ({ nodes: state.nodes, edges: state.edges }),
     },
   ),
