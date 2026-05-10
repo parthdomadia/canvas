@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useCanvasStore } from '@/store/canvasStore'
 import { deleteNode as apiDeleteNode } from '@/api/nodes'
 import { deleteEdge as apiDeleteEdge } from '@/api/edges'
+import { THEME_ORDER } from '@/styles/themes'
 
 export function useKeyboardShortcuts() {
   useEffect(() => {
@@ -25,6 +26,15 @@ export function useKeyboardShortcuts() {
       ) {
         e.preventDefault()
         useCanvasStore.temporal.getState().redo()
+        return
+      }
+
+      // Cycle theme: Ctrl+Shift+T
+      if (e.key === 'T' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+        e.preventDefault()
+        const { theme, setTheme } = useCanvasStore.getState()
+        const idx = THEME_ORDER.indexOf(theme)
+        setTheme(THEME_ORDER[(idx + 1) % THEME_ORDER.length])
         return
       }
 

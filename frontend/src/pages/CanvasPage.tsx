@@ -4,9 +4,9 @@ import { getOrCreateCanvas } from '@/api/canvases'
 import { useCanvasStore } from '@/store/canvasStore'
 import { CanvasStage } from '@/components/canvas/CanvasStage'
 import { UIOverlay } from '@/components/overlay/UIOverlay'
-import { Toolbar } from '@/components/ui/Toolbar'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useAutosave } from '@/hooks/useAutosave'
+import { useTheme } from '@/hooks/useTheme'
 
 export function CanvasPage() {
   const hydrateCanvas = useCanvasStore((s) => s.hydrateCanvas)
@@ -25,6 +25,7 @@ export function CanvasPage() {
 
   useKeyboardShortcuts()
   useAutosave()
+  useTheme()
 
   if (isLoading) {
     return (
@@ -53,7 +54,6 @@ export function CanvasPage() {
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
-      <Toolbar />
       <CanvasStage />
       <UIOverlay />
     </div>
