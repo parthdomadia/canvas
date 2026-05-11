@@ -30,6 +30,7 @@ async def create_edge(
         "target_id": body.target_id,
         "label": body.label,
         "style": body.style,
+        "edge_type": body.edge_type,
     }).execute()
 
     if not result.data:

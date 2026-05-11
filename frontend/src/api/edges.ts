@@ -5,10 +5,12 @@ export async function createEdge(
   canvasId: string,
   sourceId: string,
   targetId: string,
+  edgeType: 'simple' | 'directed' = 'simple',
 ): Promise<CanvasEdge> {
   const res = await apiClient.post<CanvasEdge>(`/canvases/${canvasId}/edges`, {
     source_id: sourceId,
     target_id: targetId,
+    edge_type: edgeType,
   })
   return res.data
 }

@@ -10,8 +10,16 @@ export async function getOrCreateCanvas(): Promise<CanvasData> {
     try {
       const res = await apiClient.get<CanvasData>(`/canvases/${storedId}`)
       return res.data
-    } catch {
-      localStorage.removeItem(CANVAS_ID_KEY)
+    } catch (err: unknown) {
+      // Only clear the stored ID if the canvas genuinely doesn't exist (404).
+      // Any other error (500, network, etc.) should surface rather than
+      // silently creating a new canvas and losing the user's work.
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 404) {
+        localStorage.removeItem(CANVAS_ID_KEY)
+      } else {
+        throw err
+      }
     }
   }
 
