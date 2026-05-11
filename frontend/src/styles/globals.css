@@ -75,3 +75,8 @@ body {
   background: rgba(128, 128, 128, 0.6);
   background-clip: padding-box;
 }
+
+@keyframes pulse-dot {
+  from { transform: scale(0.8); opacity: 1; }
+  to   { transform: scale(1.3); opacity: 0.4; }
+}
