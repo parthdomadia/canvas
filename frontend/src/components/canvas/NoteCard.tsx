@@ -84,6 +84,37 @@ export const NoteCard = memo(function NoteCard({
     tween.play()
   }, [isPendingDelete, nodeId, confirmDelete])
 
+  const prevSelectedRef = useRef(false)
+
+  // Selection pulse: scale 1 → 1.04 → 1 when isSelected goes true
+  useEffect(() => {
+    if (isSelected && !prevSelectedRef.current) {
+      const group = groupRef.current
+      if (group) {
+        let tween1: Konva.Tween
+        tween1 = new Konva.Tween({
+          node: group,
+          duration: 0.09,
+          scaleX: 1.04,
+          scaleY: 1.04,
+          easing: Konva.Easings.EaseIn,
+          onFinish: () => {
+            tween1.destroy()
+            new Konva.Tween({
+              node: group,
+              duration: 0.09,
+              scaleX: 1,
+              scaleY: 1,
+              easing: Konva.Easings.EaseOut,
+            }).play()
+          },
+        })
+        tween1.play()
+      }
+    }
+    prevSelectedRef.current = isSelected
+  }, [isSelected])
+
   if (!node) return null
 
   const borderColor = isSelected
