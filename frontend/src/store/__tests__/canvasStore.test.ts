@@ -75,6 +75,7 @@ describe('deleteNode', () => {
           target_id: 'node-2',
           label: null,
           style: 'solid',
+          edge_type: 'simple',
         },
       },
     })

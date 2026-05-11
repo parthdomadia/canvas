@@ -431,7 +431,7 @@ export function NodeLayer() {
         enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right']}
         anchorSize={10}
         anchorStyleFunc={(anchor) => { anchor.opacity(0) }}
-        boundBoxFunc={(oldBox, newBox) => ({
+        boundBoxFunc={(_oldBox, newBox) => ({
           ...newBox,
           width: Math.max(80, newBox.width),
           height: Math.max(60, newBox.height),
