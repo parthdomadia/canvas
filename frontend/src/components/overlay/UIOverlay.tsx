@@ -6,6 +6,7 @@ import { EmptyState } from './EmptyState'
 export function UIOverlay() {
   const editingNodeId = useCanvasStore((s) => s.editingNodeId)
   const nodes = useCanvasStore((s) => s.nodes)
+  const canvasId = useCanvasStore((s) => s.canvasId)
   const viewport = useCanvasStore((s) => s.viewport)
   const setEditingNodeId = useCanvasStore((s) => s.setEditingNodeId)
 
@@ -14,7 +15,7 @@ export function UIOverlay() {
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
       <ShortcutsModal />
-      {Object.keys(nodes).length === 0 && <EmptyState />}
+      {canvasId && Object.keys(nodes).length === 0 && <EmptyState />}
       {editingNode && (
         <div style={{ pointerEvents: 'all' }}>
           <NodeEditor

@@ -82,37 +82,45 @@ export const NoteCard = memo(function NoteCard({
       },
     })
     tween.play()
+    return () => tween.destroy()
   }, [isPendingDelete, nodeId, confirmDelete])
 
   const prevSelectedRef = useRef(false)
 
   // Selection pulse: scale 1 → 1.04 → 1 when isSelected goes true
   useEffect(() => {
-    if (isSelected && !prevSelectedRef.current) {
-      const group = groupRef.current
-      if (group) {
-        let tween1: Konva.Tween
-        tween1 = new Konva.Tween({
-          node: group,
-          duration: 0.09,
-          scaleX: 1.04,
-          scaleY: 1.04,
-          easing: Konva.Easings.EaseIn,
-          onFinish: () => {
-            tween1.destroy()
-            new Konva.Tween({
-              node: group,
-              duration: 0.09,
-              scaleX: 1,
-              scaleY: 1,
-              easing: Konva.Easings.EaseOut,
-            }).play()
-          },
-        })
-        tween1.play()
-      }
+    if (!isSelected || prevSelectedRef.current) {
+      prevSelectedRef.current = isSelected
+      return
     }
     prevSelectedRef.current = isSelected
+    const group = groupRef.current
+    if (!group) return
+    let tween2: Konva.Tween | null = null
+    let tween1: Konva.Tween
+    tween1 = new Konva.Tween({
+      node: group,
+      duration: 0.09,
+      scaleX: 1.04,
+      scaleY: 1.04,
+      easing: Konva.Easings.EaseIn,
+      onFinish: () => {
+        tween1.destroy()
+        tween2 = new Konva.Tween({
+          node: group,
+          duration: 0.09,
+          scaleX: 1,
+          scaleY: 1,
+          easing: Konva.Easings.EaseOut,
+        })
+        tween2.play()
+      },
+    })
+    tween1.play()
+    return () => {
+      tween1.destroy()
+      tween2?.destroy()
+    }
   }, [isSelected])
 
   if (!node) return null
