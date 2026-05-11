@@ -1,4 +1,4 @@
-import { memo, useState } from 'react'
+import { memo, useState, useRef, useEffect } from 'react'
 import { Group, Rect, Text } from 'react-konva'
 import Konva from 'konva'
 import { useCanvasStore } from '@/store/canvasStore'
@@ -39,6 +39,26 @@ export const NoteCard = memo(function NoteCard({
   const node = useCanvasStore((s) => s.nodes[nodeId])
   const theme = useCanvasStore((s) => THEMES[s.theme])
   const [hovered, setHovered] = useState(false)
+  const groupRef = useRef<Konva.Group | null>(null)
+
+  // Mount animation: fade + scale in
+  useEffect(() => {
+    const group = groupRef.current
+    if (!group) return
+    group.opacity(0)
+    group.scaleX(0.85)
+    group.scaleY(0.85)
+    const tween = new Konva.Tween({
+      node: group,
+      duration: 0.15,
+      opacity: 1,
+      scaleX: 1,
+      scaleY: 1,
+      easing: Konva.Easings.EaseOut,
+    })
+    tween.play()
+    return () => tween.destroy()
+  }, [])
 
   if (!node) return null
 
@@ -60,7 +80,11 @@ export const NoteCard = memo(function NoteCard({
 
   return (
     <Group
-      ref={(g) => { if (g) nodeGroupRefs.set(nodeId, g); else nodeGroupRefs.delete(nodeId) }}
+      ref={(g) => {
+        groupRef.current = g
+        if (g) nodeGroupRefs.set(nodeId, g)
+        else nodeGroupRefs.delete(nodeId)
+      }}
       x={node.x}
       y={node.y}
       draggable
