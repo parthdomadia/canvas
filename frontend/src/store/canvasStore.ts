@@ -13,12 +13,15 @@ interface CanvasState {
   connectingFrom: string | null
   editingNodeId: string | null
   theme: ThemeName
+  pendingDeleteIds: Set<string>
 
   hydrateCanvas: (id: string, nodes: CanvasNode[], edges: CanvasEdge[], viewport: Viewport) => void
   addNode: (node: CanvasNode) => void
   updateNode: (id: string, patch: Partial<CanvasNode>) => void
   moveNodes: (updates: Array<{ id: string; x: number; y: number }>) => void
   deleteNode: (id: string) => void
+  startDeleteNodes: (ids: string[]) => void
+  confirmDelete: (ids: string[]) => void
   addEdge: (edge: CanvasEdge) => void
   deleteEdge: (id: string) => void
   setViewport: (viewport: Viewport) => void
@@ -41,6 +44,7 @@ export const useCanvasStore = create<CanvasState>()(
       connectingFrom: null,
       editingNodeId: null,
       theme: loadTheme(),
+      pendingDeleteIds: new Set(),
 
       hydrateCanvas: (id, nodes, edges, viewport) =>
         set({
@@ -78,6 +82,28 @@ export const useCanvasStore = create<CanvasState>()(
           return { nodes: remainingNodes, edges }
         }),
 
+      startDeleteNodes: (ids) =>
+        set((state) => ({
+          pendingDeleteIds: new Set([...state.pendingDeleteIds, ...ids]),
+        })),
+
+      confirmDelete: (ids) =>
+        set((state) => {
+          const pendingDeleteIds = new Set(state.pendingDeleteIds)
+          const nodes = { ...state.nodes }
+          const edges = { ...state.edges }
+          for (const id of ids) {
+            pendingDeleteIds.delete(id)
+            delete nodes[id]
+            for (const [edgeId, edge] of Object.entries(edges)) {
+              if (edge.source_id === id || edge.target_id === id) {
+                delete edges[edgeId]
+              }
+            }
+          }
+          return { pendingDeleteIds, nodes, edges }
+        }),
+
       addEdge: (edge) =>
         set((state) => ({ edges: { ...state.edges, [edge.id]: edge } })),
 
@@ -95,7 +121,7 @@ export const useCanvasStore = create<CanvasState>()(
       setTheme: (theme) => { saveTheme(theme); set({ theme }) },
     }),
     {
-      // Only track nodes and edges in undo history — theme changes are not undoable
+      // Only track nodes and edges in undo history
       partialize: (state) => ({ nodes: state.nodes, edges: state.edges }),
     },
   ),

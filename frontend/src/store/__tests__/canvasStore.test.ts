@@ -26,6 +26,7 @@ beforeEach(() => {
     connectingFrom: null,
     editingNodeId: null,
     theme: 'dark',
+    pendingDeleteIds: new Set(),
   })
   useCanvasStore.temporal.getState().clear()
 })
@@ -114,6 +115,52 @@ describe('setSelectedIds', () => {
     useCanvasStore.getState().setSelectedIds(['node-1', 'node-2'])
     expect(useCanvasStore.getState().selectedIds.has('node-1')).toBe(true)
     expect(useCanvasStore.getState().selectedIds.has('node-2')).toBe(true)
+  })
+})
+
+describe('startDeleteNodes', () => {
+  it('adds ids to pendingDeleteIds without removing the node from state', () => {
+    useCanvasStore.getState().addNode(mockNode)
+    useCanvasStore.getState().startDeleteNodes(['node-1'])
+    expect(useCanvasStore.getState().pendingDeleteIds.has('node-1')).toBe(true)
+    expect(useCanvasStore.getState().nodes['node-1']).toBeDefined()
+  })
+
+  it('does not affect nodes that are not being deleted', () => {
+    useCanvasStore.getState().addNode(mockNode)
+    useCanvasStore.getState().addNode({ ...mockNode, id: 'node-2' })
+    useCanvasStore.getState().startDeleteNodes(['node-1'])
+    expect(useCanvasStore.getState().nodes['node-2']).toBeDefined()
+  })
+})
+
+describe('confirmDelete', () => {
+  it('removes node from nodes and pendingDeleteIds', () => {
+    useCanvasStore.getState().addNode(mockNode)
+    useCanvasStore.getState().startDeleteNodes(['node-1'])
+    useCanvasStore.getState().confirmDelete(['node-1'])
+    expect(useCanvasStore.getState().nodes['node-1']).toBeUndefined()
+    expect(useCanvasStore.getState().pendingDeleteIds.has('node-1')).toBe(false)
+  })
+
+  it('removes edges connected to the confirmed node', () => {
+    useCanvasStore.setState({
+      nodes: { 'node-1': mockNode, 'node-2': { ...mockNode, id: 'node-2' } },
+      edges: {
+        'edge-1': {
+          id: 'edge-1',
+          canvas_id: 'canvas-1',
+          source_id: 'node-1',
+          target_id: 'node-2',
+          label: null,
+          style: 'solid',
+          edge_type: 'simple',
+        },
+      },
+      pendingDeleteIds: new Set(['node-1']),
+    })
+    useCanvasStore.getState().confirmDelete(['node-1'])
+    expect(useCanvasStore.getState().edges['edge-1']).toBeUndefined()
   })
 })
 
