@@ -6,6 +6,7 @@ import { createNode } from '@/api/nodes'
 import { NodeLayer } from './NodeLayer'
 import { EdgeLayer } from './EdgeLayer'
 import { SelectionBox } from './SelectionBox'
+import { DotGrid } from './DotGrid'
 
 const MIN_ZOOM = 0.1
 const MAX_ZOOM = 5
@@ -276,6 +277,9 @@ export function CanvasStage() {
       onMouseUp={handleStageMouseUp}
       style={{ background: 'var(--canvas-bg)' }}
     >
+      <Layer listening={false}>
+        <DotGrid />
+      </Layer>
       <EdgeLayer />
       <NodeLayer />
       {ghostRect && (
