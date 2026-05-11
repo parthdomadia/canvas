@@ -7,7 +7,7 @@ import { THEME_ORDER } from '@/styles/themes'
 export function useKeyboardShortcuts() {
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      const { editingNodeId, selectedIds, deleteNode, deleteEdge, nodes, edges } =
+      const { editingNodeId, selectedIds, startDeleteNodes, deleteEdge, nodes, edges } =
         useCanvasStore.getState()
 
       if (editingNodeId) return
@@ -46,7 +46,9 @@ export function useKeyboardShortcuts() {
         const nodeIds = ids.filter((id) => id in nodes)
         const edgeIds = ids.filter((id) => id in edges)
 
-        nodeIds.forEach((id) => deleteNode(id))
+        // Nodes: mark for animated deletion — NoteCard plays tween then calls confirmDelete
+        startDeleteNodes(nodeIds)
+        // Edges: instant removal
         edgeIds.forEach((id) => deleteEdge(id))
 
         await Promise.all([
