@@ -10,6 +10,7 @@ export interface Theme {
   edgeDefault: string         // unselected, unhighlighted edge color
   highlightDirected: string   // directed-reachability neighbor highlight
   highlightSimple: string     // simple-neighbor highlight
+  dotGrid: string             // dot grid pattern color
 }
 
 export const THEMES: Record<ThemeName, Theme> = {
@@ -23,6 +24,7 @@ export const THEMES: Record<ThemeName, Theme> = {
     edgeDefault: '#4a4a6a',
     highlightDirected: '#14B8A6',
     highlightSimple: '#F5C518',
+    dotGrid: '#2a2a3a',
   },
   light: {
     canvasBg: '#f4f0e8',
@@ -34,6 +36,7 @@ export const THEMES: Record<ThemeName, Theme> = {
     edgeDefault: '#9ca3af',
     highlightDirected: '#0891B2',
     highlightSimple: '#D97706',
+    dotGrid: '#c0c4cc',
   },
   matrix: {
     canvasBg: '#000000',
@@ -45,6 +48,7 @@ export const THEMES: Record<ThemeName, Theme> = {
     edgeDefault: '#1a5c1a',
     highlightDirected: '#14B8A6',
     highlightSimple: '#F5C518',
+    dotGrid: '#0d2e0d',
   },
 }
 
