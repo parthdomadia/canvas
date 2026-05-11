@@ -60,6 +60,30 @@ export const NoteCard = memo(function NoteCard({
     return () => tween.destroy()
   }, [])
 
+  const isPendingDelete = useCanvasStore((s) => s.pendingDeleteIds.has(nodeId))
+  const confirmDelete = useCanvasStore((s) => s.confirmDelete)
+
+  // Delete animation: shrink + fade out, then confirm deletion
+  useEffect(() => {
+    if (!isPendingDelete) return
+    const group = groupRef.current
+    if (!group) return
+    let tween: Konva.Tween
+    tween = new Konva.Tween({
+      node: group,
+      duration: 0.12,
+      opacity: 0,
+      scaleX: 0.85,
+      scaleY: 0.85,
+      easing: Konva.Easings.EaseIn,
+      onFinish: () => {
+        tween.destroy()
+        confirmDelete([nodeId])
+      },
+    })
+    tween.play()
+  }, [isPendingDelete, nodeId, confirmDelete])
+
   if (!node) return null
 
   const borderColor = isSelected
