@@ -4,7 +4,7 @@ import { useCanvasStore } from '@/store/canvasStore'
 import { THEMES } from '@/styles/themes'
 
 const DOT_SPACING = 32
-const DOT_RADIUS = 1.5
+const DOT_RADIUS = 2
 const CANVAS_EXTENT = 100_000
 
 function makeDotPattern(color: string): HTMLCanvasElement {

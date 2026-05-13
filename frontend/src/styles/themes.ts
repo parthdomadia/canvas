@@ -24,7 +24,7 @@ export const THEMES: Record<ThemeName, Theme> = {
     edgeDefault: '#4a4a6a',
     highlightDirected: '#14B8A6',
     highlightSimple: '#F5C518',
-    dotGrid: '#2a2a3a',
+    dotGrid: '#3a3a52',
   },
   light: {
     canvasBg: '#f4f0e8',
@@ -48,7 +48,7 @@ export const THEMES: Record<ThemeName, Theme> = {
     edgeDefault: '#1a5c1a',
     highlightDirected: '#14B8A6',
     highlightSimple: '#F5C518',
-    dotGrid: '#0d2e0d',
+    dotGrid: '#1a4a1a',
   },
 }
 
